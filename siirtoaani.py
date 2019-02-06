@@ -1,7 +1,7 @@
 from math import floor
 import random
 
-def stv(path=None,ballots=None,candidates=None,tie_breaking="random"):
+def stv(path=None,ballots=None,candidates=None,tie_breaking="random",):
     if path:
         ballots = {}
         with open(path,"r",encoding="utf-8") as f:
