@@ -2,16 +2,19 @@ import numpy as np
 from scipy import stats
 import csv
 
-def finngen(names,name=None,kunnat=False):
+def finngen(names,file=None,ages=False,cities=False):
     name_paths = [
         "etunimet.csv",
         "sukunimet.csv"
         ]
 
-    if kunnat:
+    if ages:
+        name_paths.append("iät.csv")
+
+    if cities:
         name_paths.append("kunnat.csv")
 
-    namebase = {}
+    b = []
 
     for path in name_paths:
         fl = []
@@ -32,47 +35,34 @@ def finngen(names,name=None,kunnat=False):
             f_probs.append(k[1])
         
         xk = np.arange(len(f_names))
-        namebase[path] = [f_names,f_probs,xk]
+
+        dist = stats.rv_discrete(values=(xk,f_probs))
+        i_f = dist.rvs(size=names)
+
+        strings = [f_names[n] for n in i_f]
+
+        b.append(strings)
     
-    nms = namebase["etunimet.csv"][0]
-    pk_n = namebase["etunimet.csv"][1]
-    xk_n = namebase["etunimet.csv"][2]
-
-    first = stats.rv_discrete(values=(xk_n,pk_n))
-    i_n = first.rvs(size=names)
-    
-    sur = namebase["sukunimet.csv"][0]
-    pk_s = namebase["sukunimet.csv"][1]
-    xk_s = namebase["sukunimet.csv"][2]
-
-    last = stats.rv_discrete(values=(xk_s,pk_s))
-    i_s = last.rvs(size=names)
-
-    if kunnat:
-        city = namebase["kunnat.csv"][0]
-        pk_k = namebase["kunnat.csv"][1]
-        xk_k = namebase["kunnat.csv"][2]
-
-        ct = stats.rv_discrete(values=(xk_k,pk_k))
-        i_k = ct.rvs(size=names)
-
     full_names = []
+    l = len(b)
+    
+    for i in range(names):
+        name = ""
+        for j in range(l):
+            substring = b[j][i]
+            if j == 0:
+                delimiter = " "
+            elif j < l-1:
+                delimiter = ", "
+            else:
+                delimiter = ""
+            name += substring + delimiter
 
-    for i in range(len(i_n)):
-        etu = nms[i_n[i]]
-        suku = sur[i_s[i]]
+        full_names.append(name)
 
-        nimi = f"{etu} {suku}"
-
-        if kunnat:
-            city = city[i_k[i]]
-            nimi += f", {city}"
-
-        full_names.append(nimi)
-
-    if name:
-        with open(f"{name}.csv",'w',encoding='utf-8') as f:
+    if file:
+        with open(f"{file}.csv",'w',encoding='utf-8') as f:
             w = csv.writer(f,delimiter=',')
-            w.writerows(full_names)
+            [w.writerow(row.split(", ")) for row in full_names]
 
     return full_names
