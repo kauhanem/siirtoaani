@@ -53,7 +53,7 @@ def finngen(names,file=None,ages=False,cities=False):
         for j in range(l):
             substring = b[j][i]
             if j == 0:
-                delimiter = ", "
+                delimiter = " "
             elif j < l-1:
                 delimiter = ", "
             else:

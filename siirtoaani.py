@@ -98,7 +98,36 @@ def stv(path=None,ballots=None,candidates=None,tie_breaking="backwards",):
                         if toss:
                             print(f"Coin toss between {win_cand[0]} and {win_cand[1]}.")
                             winner = random.choice(win_cand)
-                
+                elif tie_breaking == "forwards":
+                    toss = True
+                    if i > 1:
+                        [print(f"{w_c} votes: {results[w_c]}")
+                         for w_c in win_cand]
+                        print()
+                        for t in range(i-1):
+                            cand_1_votes = results[win_cand[0]][t]
+                            cand_2_votes = results[win_cand[1]][t]
+                            print("- "*25)
+                            print(f"Round {i}")
+                            [print(f"{w_c} votes: {results[w_c][t]}")
+                             for w_c in win_cand]
+                            print()
+
+                            if cand_1_votes > cand_2_votes:
+                                winner = win_cand[0]
+                                toss = False
+                                break
+
+                            elif cand_1_votes < cand_2_votes:
+                                winner = win_cand[1]
+                                toss = False
+                                break
+
+                        if toss:
+                            print(
+                                f"Coin toss between {win_cand[0]} and {win_cand[1]}.")
+                            winner = random.choice(win_cand)
+
             # Toisella enemmän
             elif cand_1_votes > cand_2_votes:
                 winner = win_cand[0]
@@ -164,6 +193,45 @@ def stv(path=None,ballots=None,candidates=None,tie_breaking="backwards",):
                             if len(l) != len(low_tb):
                                     print(f"Difference found on round {i - (abs(t)-2)}")
                                     [print(f"{cand} votes on round {i - (abs(t)-2)}: {results[cand][t]}") for cand in l]
+                                    l_s = ", ".join(low_tb)
+                                    print(f"Now low is: {l_s}\n")
+
+                            if len(low_tb) == 1:
+                                loser = low_tb[0]
+                                break
+
+                            else:
+                                l = low_tb
+
+                    if len(low_tb) > 1:
+                        l_s = ", ".join(low_tb)
+                        print(f"Coin toss between {l_s}.\n")
+                        loser = random.choice(low_tb)
+
+                elif tie_breaking == "forwards":
+                    low_tb = low
+
+                    if i > 1:
+                        l = low
+                        for t in range(i-1):
+                            low_tb = []
+
+                            for cand in l:
+                                tb_votes = results[cand][t]
+
+                                if not low_tb:
+                                    low_tb.append(cand)
+
+                                elif tb_votes == results[low_tb[0]][t]:
+                                    low_tb.append(cand)
+
+                                elif tb_votes < results[low_tb[0]][t]:
+                                    low_tb.clear()
+                                    low_tb.append(cand)
+
+                            if len(l) != len(low_tb):
+                                    print(f"Difference found on round {t+1}")
+                                    [print(f"{cand} votes on round {t+1}: {results[cand][t]}") for cand in l]
                                     l_s = ", ".join(low_tb)
                                     print(f"Now low is: {l_s}\n")
 
