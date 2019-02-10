@@ -1,6 +1,8 @@
+import csv
+
 import numpy as np
 from scipy import stats
-import csv
+
 
 def finngen(names,file=None,ages=False,cities=False):
     name_paths = [
@@ -51,13 +53,12 @@ def finngen(names,file=None,ages=False,cities=False):
         for j in range(l):
             substring = b[j][i]
             if j == 0:
-                delimiter = " "
+                delimiter = ", "
             elif j < l-1:
                 delimiter = ", "
             else:
                 delimiter = ""
             name += substring + delimiter
-
         full_names.append(name)
 
     if file:
