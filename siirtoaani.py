@@ -50,12 +50,12 @@ def stv(path=None,ballots=None,candidates=None,tie_breaking="backwards",):
         
         print("- "*50)
         print(f"Round {i}.")
+        print(f"Total: {total_votes}, empty ballots: {empty}, threshold: {threshold}.\n")
         print(f"Votes now:")
         [print(f"{V}: {results[V][-1]}") for V in results]
-        print(f"Total: {total_votes}, empty ballots: {empty}, threshold: {threshold}.\n")
+        print()
          
         # Winner determination
-
         if len(results) == 2:
             win_cand = []
             for win in results:
@@ -74,23 +74,22 @@ def stv(path=None,ballots=None,candidates=None,tie_breaking="backwards",):
                     
                 elif tie_breaking == "backwards":
                     toss = True
-
                     if i > 1:
-                        print(f"Cand. 1 {win_cand[0]} votes: {results[win_cand[0]]}")
-                        print(f"Cand. 2 {win_cand[1]} votes: {results[win_cand[1]]}\n")
+                        [print(f"{w_c} votes: {results[w_c]}") for w_c in win_cand]
+                        print()
                         for t in range(-2,-i-1,-1):
                             cand_1_votes = results[win_cand[0]][t]
                             cand_2_votes = results[win_cand[1]][t]
-
-                            print(f"i: {t}")
-                            print(f"round: {i - (abs(t)-2)}")
-                            print(f"Cand. 1 {win_cand[0]} votes: {cand_1_votes}")
-                            print(f"Cand. 2 {win_cand[1]} votes: {cand_2_votes}\n")
+                            print("- "*25)
+                            print(f"Round {i - (abs(t)-1)}")
+                            [print(f"{w_c} votes: {results[w_c][t]}") for w_c in win_cand]
+                            print()
                                 
                             if cand_1_votes > cand_2_votes:
                                 winner = win_cand[0]
                                 toss = False
                                 break
+
                             elif cand_1_votes < cand_2_votes:
                                 winner = win_cand[1]
                                 toss = False
@@ -100,38 +99,43 @@ def stv(path=None,ballots=None,candidates=None,tie_breaking="backwards",):
                             print(f"Coin toss between {win_cand[0]} and {win_cand[1]}.")
                             winner = random.choice(win_cand)
                 
-                # Toisella enemmän
+            # Toisella enemmän
             elif cand_1_votes > cand_2_votes:
                 winner = win_cand[0]
             else:
                 winner = win_cand[1]
-        
-        low = []
-        for candidate in results:
-            c_votes = results[candidate][-1]
-            results[candidate].append(c_votes)
-        
-            if c_votes >= threshold:
-                winner = candidate
-                print(f"Winner is {winner} with {results[winner][-1]} votes.")
-                ready = True
-                break
-            
-            if not low:
-                low.append(candidate)
-            
-            elif c_votes == results[low[0]][-1]:
-                low.append(candidate)
 
-            elif c_votes < results[low[0]][-1]:
-                low.clear()
-                low.append(candidate)
-        
+            print(f"Winner is {winner} with {results[winner][-1]} votes.")
+            ready = True
+               
         if not ready:
+            low = []
+            for candidate in results:
+                c_votes = results[candidate][-1]
+                results[candidate].append(c_votes)
+
+                if c_votes >= threshold:
+                    winner = candidate
+                    print(f"Winner is {winner} with {results[winner][-1]} votes.")
+                    ready = True
+                    break
+
+                if not low:
+                    low.append(candidate)
+
+                elif c_votes == results[low[0]][-1]:
+                    low.append(candidate)
+
+                elif c_votes < results[low[0]][-1]:
+                    low.clear()
+                    low.append(candidate)
+            
             if len(low) == 1:
                 loser = low[0]
             else:
                 print("Tie-breaking")
+                [print(f"{l_c} votes: {results[l_c]}") for l_c in low]
+                print()
                 if tie_breaking == "random":
                     loser = random.choice(low)
                     print(f"Coin toss between {low}.")
@@ -141,17 +145,12 @@ def stv(path=None,ballots=None,candidates=None,tie_breaking="backwards",):
 
                     if i > 1:
                         l = low
-                        for t in range(-3,-i-1,-1):
+                        for t in range(-3,-i-2,-1):
                             low_tb = []
 
-                            print(f"i: {t}")
-                            print(f"round: {i - (abs(t)-2)}")
                             for cand in l:
                                 tb_votes = results[cand][t]
-                                print(f"{cand}, {results[cand]}")
-                                print(f"votes on round {i - (abs(t)-2)}: {tb_votes}")
-                                print(f"low: {low_tb}\n")
-
+                                
                                 if not low_tb:
                                     low_tb.append(cand)
                     
@@ -160,19 +159,24 @@ def stv(path=None,ballots=None,candidates=None,tie_breaking="backwards",):
 
                                 elif tb_votes < results[low_tb[0]][t]:
                                     low_tb.clear()
-                                    low_tb.append(cand)
+                                    low_tb.append(cand)                           
                         
+                            if len(l) != len(low_tb):
+                                    print(f"Difference found on round {i - (abs(t)-2)}")
+                                    [print(f"{cand} votes on round {i - (abs(t)-2)}: {results[cand][t]}") for cand in l]
+                                    l_s = ", ".join(low_tb)
+                                    print(f"Now low is: {l_s}\n")
+
                             if len(low_tb) == 1:
-                                # print("Lone loser.")
                                 loser = low_tb[0]
                                 break
-                            # elif len(l) == len(low_tb):
-                            #     break
+
                             else:
                                 l = low_tb
 
                     if len(low_tb) > 1:
-                        print(f"Coin toss between {low_tb}.")
+                        l_s = ", ".join(low_tb)
+                        print(f"Coin toss between {l_s}.\n")
                         loser = random.choice(low_tb)
 
             print(f"Loser is {loser} with {results[loser][-1]} votes.")
