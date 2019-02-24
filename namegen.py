@@ -63,45 +63,113 @@ class Dist:
 def generate_names(names, name_format, dists):
     full_names = []
 
+    century_char = {
+        18: "+",
+        19: "-",
+        20: "A"
+    }
+
+    domain_f = np.arange(3,900)
+    domain_m = np.arange(2,900)
+
+    check_char = {
+        0: "0",
+        1: "1",
+        2: "2",
+        3: "3",
+        4: "4",
+        5: "5",
+        6: "6",
+        7: "7",
+        8: "8",
+        9: "9",
+        10: "A",
+        11: "B",
+        12: "C",
+        13: "D",
+        14: "E",
+        15: "F",
+        16: "H",
+        17: "J",
+        18: "K",
+        19: "L",
+        20: "M",
+        21: "N",
+        22: "P",
+        23: "R",
+        24: "S",
+        25: "T",
+        26: "U",
+        27: "V",
+        28: "W",
+        29: "X",
+        30: "Y"
+    }
+
     for i in range(names):
         name = []
         sex = dists["sex"].generate()
 
-        for piece in name_format:
-            if piece == "first":
-                if sex == "f":
-                    key = "first_f"
-                else:
-                    key = "first_m"
-            
-            elif piece == "other":
-                if sex == "f":
-                    key = "other_f"
-                else:
-                    key = "other_m"
-            
+        month,year = dists["bday"].generate()
+
+        if month == "2":
+            if int(year) % 4 == 0 and (not int(year) % 100 == 0 or int(year) % 400 == 0):
+                days = 29
             else:
-                key = piece
-
-            p = dists[key].generate()
-
-            if piece == "bday":
-                month = int(p[0])
-                year = int(p[1])
-
-                if month == "2":
-                    if year % 4 == 0 and (not year % 100 == 0 or year % 400 == 0):
-                        days = 29
-                    else:
-                        days = 28
-                elif month in ["1","3","5","7","8","10","12"]:
-                    days = 31
-                else:
-                    days = 30
+                days = 28
+        elif month in ["1","3","5","7","8","10","12"]:
+            days = 31
+        else:
+            days = 30
                 
-                day = np.random.random_integers(1,days+1)
+        day = np.random.randint(1,days+1)
 
+        for piece in name_format:
+            if piece == "bday":
                 p = str(day) + "." + str(month) + "." + str(year)
+
+            elif piece == "id":
+                if sex == "f":
+                    domain = domain_f
+                else:
+                    domain = domain_m
+
+                d = str(day)
+                m = str(month)
+                y = str(year)
+
+                num = np.random.choice(domain,1)[0]
+                n = str(num)
+                
+                p = "0"*(2-len(d)) + d
+                p += "0"*(2-len(m)) + m 
+                p += y[-2] + y[-1]
+
+                P = p + "0"*(3-len(n)) + n
+                
+                p += century_char[int(year)//100]
+                
+                p += "0"*(3-len(n)) + n
+
+                p += check_char[int(P)%31]
+
+            else:
+                if piece == "first":
+                    if sex == "f":
+                        key = "first_f"
+                    else:
+                        key = "first_m"
+                
+                elif piece == "other":
+                    if sex == "f":
+                        key = "other_f"
+                    else:
+                        key = "other_m"
+
+                else:
+                    key = piece
+
+                p = dists[key].generate()
 
             name.append(p)
         
